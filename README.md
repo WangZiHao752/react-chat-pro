@@ -1,10 +1,10 @@
 ## 介绍
 `简易聊天页面`
 ## 技术栈
-前端：react + socket.io-client + antd
+前端：react + socket.io-client + antd + chatui
 后端：express + socket.io
 
-### 使用步骤
+### 启动步骤
 
 1. 打包项目
     npm run build
@@ -21,10 +21,11 @@ let userList = [ //在线用户列表
     username:"123456",
     avatar1:'',  //头像
     id:"asdaffasfasf",
-    isInputting:true,
+    isInputting:false,
   }
 ]; 
 ```
 
 
-### 待完成  退出登陆 更新在线用户列表
+### 待完成
+侧栏在线用户 排版  发送图片功能
