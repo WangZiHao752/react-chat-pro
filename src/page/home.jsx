@@ -1,7 +1,9 @@
 import React,{useEffect,useState} from 'react';
 import { message } from 'antd'
 import {connect} from "react-redux"
-import Chat, { Bubble, useMessages } from '@chatui/core';
+import Chat, { useMessages } from '@chatui/core';
+import defaultAvatar from "../reset/defaultAvatar.svg";
+import MyBubble from "./TabBar/bubbles"
 import moment from 'moment';
 import pic from "../reset/pic.svg"
 import Header from "./TabBar/header"
@@ -14,8 +16,10 @@ const initialMessages = [
     type: 'text',
     content: { text: '主人好，我是祥子哥，你的贴心小助理~' },
     user: { avatar: assistant },
+    name:'管家祥',
   },{
     type: 'image',
+    name:'管家祥',
     content: {
       picUrl:assistant ,
     },
@@ -38,7 +42,7 @@ const App = (props) => {
   
   const { messages, appendMsg, setTyping } = useMessages(initialMessages);
   useEffect(()=>{ //didMount
-    socket = require('socket.io-client')('http://localhost:8080')
+    socket = require('socket.io-client')('http://47.111.14.227:80')
     socketFunc()
     return()=>{ //卸载期
       socket.close()
@@ -97,6 +101,7 @@ const App = (props) => {
       console.log(data);
       appendMsg({
         type: 'text',
+        name:username,
         user: { avatar: avatar1 }, //头像
         content: { text: value },
       });
@@ -117,16 +122,19 @@ const App = (props) => {
     
   function handleSend(type, val) {
     if (type === 'text' && val.trim()) {
+      console.log(avatar1);
       appendMsg({
         type: 'text',
-        user: { avatar: avatar1 }, //头像
+        user: { avatar: avatar1?avatar1:defaultAvatar }, //头像
         content: { text: val },
+        name:username,
         position: 'right',  //出现位置  不填默认左边
       });
       //添加到默认数据
       initialMessages.push({
         type: 'text',
-        user: { avatar: avatar1 }, //头像
+        user: { avatar:avatar1? avatar1:defaultAvatar }, //头像
+        name:username,
         content: { text: val },
         position: 'right',  //出现位置  不填默认左边
       })
@@ -154,17 +162,17 @@ const App = (props) => {
   }
 
   function renderMessageContent(msg) {
-    const { type, content } = msg;
+    const { type, content ,name} = msg;
 
     // 根据消息类型来渲染
     switch (type) {
       case 'text':
-        return <Bubble content={content.text} />;
+        return <MyBubble name={name} content={content.text} />
       case 'image':
         return (
-          <Bubble type="image">
-            <img src={content.picUrl} alt="" />
-          </Bubble>
+          <MyBubble type="image">
+            <img src={content.picUrl} name={name} alt="" />
+          </MyBubble>
         );
       default:
         return null;
