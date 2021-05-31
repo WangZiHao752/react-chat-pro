@@ -13,7 +13,7 @@ import React from 'react';
   const { type = 'text', content,name,children } = props;
   return (
     <div>
-      <div className="Bubble-header">{type=='text'?name?name:"无名女侠":null}</div>
+      <div className="Bubble-header">{name?name:"无名女侠"}</div>
       <div className={`Bubble ${type}`} data-type={type}>     
         {content && <p>{content}</p>}
         {children}

@@ -62,32 +62,7 @@ code {
 }
 
 
-/* 气泡 */
-.item-message{
-  display:inline-block;
-  position: relative;
-  max-width:88%;
-  min-width: 20px;
-  min-height: 35px;
-  padding:5px;
-  background:white;
-  color:#ccc;
-  border-radius:5px;
-}
 
-/* 气泡小三角 */
-.item-message::before{
-  content: '';
-  width: 0px;
-  height: 0px;
-  border-right: #fff 10px solid;
-  border-left: transparent 10px solid;
-  border-top: transparent 10px solid;
-  border-bottom: transparent 10px solid;
-  position: absolute;
-  top: 8px;
-  left: -20px;
-}
 
 
 /* 在线列表 */
@@ -101,6 +76,11 @@ code {
 }
 
 
+.upImg{
+  display: none;
+}
+
+
 
 /* 消息右 */
 .Message.right .Bubble-header{
@@ -109,6 +89,13 @@ code {
   color: #9C9D9E;
   font-size: 15px;
 }
+
+/* .Bubble.text{
+  
+} */
+
+
+
 /* 消息左 */
 .Message.left .Bubble-header{
   line-height: 17px;

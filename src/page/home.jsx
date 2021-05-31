@@ -1,5 +1,5 @@
-import React,{useEffect,useState} from 'react';
-import { message } from 'antd'
+import React,{useEffect,useRef } from 'react';
+import { message,Upload ,Button,Image} from 'antd'
 import {connect} from "react-redux"
 import Chat, { useMessages } from '@chatui/core';
 import defaultAvatar from "../reset/defaultAvatar.svg";
@@ -17,15 +17,24 @@ const initialMessages = [
     content: { text: '主人好，我是祥子哥，你的贴心小助理~' },
     user: { avatar: assistant },
     name:'管家祥',
-  },{
-    type: 'image',
-    name:'管家祥',
-    content: {
-      picUrl:assistant ,
-    },
+  }
+  // ,{
+  //   type: 'image',
+  //   name:'管家祥',
+  //   content: {
+  //     picUrl:assistant ,
+  //   },
+  // },
+];
+const toolbar=[
+  {
+    type: 'img', // 类型
+    //icon: '', // 图标（svg），与下面的 img 二选一即可
+    img: pic, // 图片（img），推荐用 56x56 的图，会覆盖 icon
+    title: '相册', // 名称
   },
 ];
-
+let buton =null;
 const NavBar = (props)=>{
   const {userInfo:{username},userInputtingList,userList} = props;
   return<div className="home-header">
@@ -36,26 +45,41 @@ const NavBar = (props)=>{
     ></Header>
   </div>
 }
+function renderMessageContent(msg) {
+  const { type, content ,name} = msg;
 
+  // 根据消息类型来渲染
+  switch (type) {
+    case 'text':
+      return <MyBubble name={name} content={content.text} />
+
+    case 'image':
+      return (
+        <MyBubble type="image"  name={name}>
+          {/* <img src={content.picUrl}  alt="" /> */}
+          <Image
+            src={content.picUrl}
+          />
+        </MyBubble>
+      );
+ 
+    default:
+      return null;
+  }
+}
 const App = (props) => {
   const {userInfo:{username,avatar1}} = props;
-  
+  const wrapper = useRef();
   const { messages, appendMsg, setTyping } = useMessages(initialMessages);
-  useEffect(()=>{ //didMount
-    socket = require('socket.io-client')('http://47.111.14.227:80')
+  useEffect(()=>{ //didMount 
+     
+    socket = require('socket.io-client')('http://localhost:8080')
     socketFunc()
     return()=>{ //卸载期
       socket.close()
     }
   },[])
-  const toolbar=[
-    {
-      type: 'img', // 类型
-      //icon: '', // 图标（svg），与下面的 img 二选一即可
-      img: pic, // 图片（img），推荐用 56x56 的图，会覆盖 icon
-      title: '相册', // 名称
-    },
-  ];
+
   const Toastlogin = (val) => {
     message.info(val+'进入了聊天室');
   };
@@ -73,7 +97,6 @@ const App = (props) => {
     
     //通知所有人   上线  下线  type:'logout' 'login'
     socket.on('toastUser',(data)=>{
-      console.log(data);
       const {userList,type} = data;
       switch(type){
         case "logout":
@@ -97,21 +120,39 @@ const App = (props) => {
 
     //聊天信息
     socket.on('getMessage',(data)=>{
-      const {avatar1,username,value} = data;
-      console.log(data);
-      appendMsg({
-        type: 'text',
-        name:username,
-        user: { avatar: avatar1 }, //头像
-        content: { text: value },
-      });
-      //添加到默认数据
-      initialMessages.push({
-        type: 'text',
-        user: { avatar: avatar1 }, //头像
-        content: { text: value },
-      })
-      
+      const {avatar1,username,value,type} = data;
+      switch(type){
+        case "image":
+          //发送消息
+          appendMsg({
+            type: 'image',
+            name:username,
+            user: { avatar: avatar1 }, //头像
+            content: { picUrl: value },
+          });
+          //添加到默认数据
+          initialMessages.push({
+            type: 'image',
+            user: { avatar:avatar1? avatar1:defaultAvatar }, //头像
+            name:username,
+            content: { picUrl: value },
+          })
+          break;
+        case "text":
+          appendMsg({
+            type: 'text',
+            name:username,
+            user: { avatar: avatar1 }, //头像
+            content: { text: value },
+          });
+          //添加到默认数据
+          initialMessages.push({
+            type: 'text',
+            user: { avatar: avatar1 }, //头像
+            content: { text: value },
+          })
+          break;
+      } 
     })
   }
     
@@ -122,7 +163,6 @@ const App = (props) => {
     
   function handleSend(type, val) {
     if (type === 'text' && val.trim()) {
-      console.log(avatar1);
       appendMsg({
         type: 'text',
         user: { avatar: avatar1?avatar1:defaultAvatar }, //头像
@@ -144,6 +184,7 @@ const App = (props) => {
             username:username,
             avatar1:avatar1,
             value: val,
+            type:"text",
             datetime: moment().format('YYYY-MM-DD:HH:MM:SS'),
           },
       });
@@ -161,33 +202,112 @@ const App = (props) => {
     }
   }
 
-  function renderMessageContent(msg) {
-    const { type, content ,name} = msg;
-
-    // 根据消息类型来渲染
-    switch (type) {
-      case 'text':
-        return <MyBubble name={name} content={content.text} />
-      case 'image':
-        return (
-          <MyBubble type="image">
-            <img src={content.picUrl} name={name} alt="" />
-          </MyBubble>
-        );
+  const onToolbarClick = (item,context)=>{
+    // item 即为上面 toolbar 中被点击的那一项，可通过 item.type 区分
+      // ctx 为上下文，可用 ctx.appendMessage 渲染消息等
+    const {type} = item; //点击项类型
+    switch(type){
+      case "img":
+        buton.previousElementSibling.click()
+        break;
       default:
-        return null;
+        break;
     }
   }
+  const onImageSend = (a,b,c)=>{
+    console.log(a,b,c);
+  }
+  const onAccessoryToggle = (a,b,c)=>{
+    console.log(a,b,c);
+  }
+  const onInputTypeChange =(a,b,c)=>{
+    console.log(a,b,c);
+  }
+  const beforeUpload = (file) => {
+    getBase64(file, (imageUrl) => {
+      /** */
+      //发送数据;
+      const {userInfo:{username,avatar1}} = props;
+      console.log(props);
+      socket.emit('chat',{ 
+        msg:{
+            username:username,
+            avatar1:avatar1,
+            type:"image",
+            value:imageUrl,
+            datetime: moment().format('YYYY-MM-DD:HH:MM:SS'),
+          },
+      });
+      //发送消息
+      appendMsg({
+        type: 'image',
+        name:username,
+        user: { avatar: avatar1 }, //头像
+        content: { picUrl: imageUrl },
+        position: 'right',  //出现位置  不填默认左边
+      });
+      //添加到默认数据
+      initialMessages.push({
+        type: 'image',
+        user: { avatar:avatar1? avatar1:defaultAvatar }, //头像
+        name:username,
+        content: { picUrl: imageUrl },
+        position: 'right',  //出现位置  不填默认左边
+      })
 
+
+    });
+    return false;
+  };
+  //取图片base64
+  const getBase64 = (img, callback) => {
+    const reader = new FileReader();
+    reader.addEventListener('load', () => callback(reader.result));
+    reader.readAsDataURL(img);
+
+  };
+  const config = {
+    name: 'file',
+    action: 'https://www.mocky.io/v2/5cc8019d300000980a055e76',
+    headers: {
+      authorization: 'authorization-text',
+    },
+    onChange(info) {
+      if (info.file.status !== 'uploading') {
+        // console.log(info.file, info.fileList);
+      }
+      if (info.file.status === 'done') {
+        // console.log(info);
+        message.success(`${info.file.name} 读取成功`);
+      } else if (info.file.status === 'error') {
+        message.error(`${info.file.name} 读取失败`);
+      }
+    },
+  };
   return (
-    <Chat
-      navbar={{ title: '卖猪狗大队' }}
-      renderNavbar={()=><NavBar {...props}></NavBar>}
-      messages={messages}
-      renderMessageContent={renderMessageContent}
-      onSend={handleSend}
-      toolbar={toolbar} 
-    />
+    <>
+      <Chat
+        ref={wrapper}
+        navbar={{ title: '卖猪狗大队' }}
+        renderNavbar={()=><NavBar {...props}></NavBar>}
+        messages={messages}
+        renderMessageContent={renderMessageContent}
+        onSend={handleSend}
+        onImageSend={onImageSend}
+        toolbar={toolbar} 
+        onToolbarClick={onToolbarClick}
+        onAccessoryToggle={onAccessoryToggle}
+        onInputTypeChange={onInputTypeChange}
+      />
+      <Upload 
+        {...config} 
+        className="upImg" 
+        accept="image/png, image/jpeg"
+        beforeUpload={beforeUpload}
+      >
+        <Button ref={(ref)=>{buton=ref}} >Click to Upload</Button>
+      </Upload>
+    </>
   );
 };
 
