@@ -1,41 +1,29 @@
 let _app = require('express');
+const Login  = require('./serve/api/login')
+const _Static = require('./serve/static')
 const app = require('express')();
-
-app.use(_app.static('./build'))
-
 const server = require('http').Server(app);
 const io = require('socket.io')(server);
 const fs = require('fs');
-Array.prototype.indexOf = function(val) {
-for (var i = 0; i < this.length; i++) {
-  if (this[i] == val) return i;
-}
-  return -1;
-};
-Array.prototype.remove = function(val) {
-  var index = this.indexOf(val);
-  if (index > -1) {
-    this.splice(index, 1);
-  }
-};
+const path = require('path')
+//在线用户列表
 let userList = [
   // {
   //   username:"123456",
   //   id:"asdaffasfasf",
   //   isInputting:true,
   // }
-]; //在线用户列表
-let userInputtingList = []; //正在输入的用户列表
+]; 
+app.use('/',_app.static('./build')); //静态资源
+app.use('/static', _app.static(path.join(__dirname, '/images')));
+app.use(_Static); //页面
+app.use(_app.json()); //解析json
+app.use(Login);   //登陆模块
 
-server.listen(8080,console.log('http://localhost:8080'));
-
-app.get('/', function (req, res) {
-  console.log(req.url);
-  res.send(fs.readFileSync('build/index.html','utf8'));
-});
-
-app.post('/login',(req,res)=>{
-  res.send(fs.readFileSync('build/index.html','utf8'));
+//io中间件  验证连接权限
+io.use(function(socket, next) {
+  // execute some code
+  next();
 })
 
 io.on('connection', function (socket) {
@@ -146,3 +134,6 @@ io.on('connect',(socket)=>{
   });
 
 })
+
+
+server.listen(8080,console.log('http://localhost:8080'));

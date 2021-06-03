@@ -2,6 +2,7 @@ import React,{useEffect,useRef } from 'react';
 import { message,Upload ,Button,Image} from 'antd'
 import {connect} from "react-redux"
 import Chat, { useMessages } from '@chatui/core';
+import Cookie from "js-cookie"
 import defaultAvatar from "../reset/defaultAvatar.svg";
 import MyBubble from "./TabBar/bubbles"
 import moment from 'moment';
@@ -73,10 +74,12 @@ const App = (props) => {
   const { messages, appendMsg, setTyping } = useMessages(initialMessages);
   useEffect(()=>{ //didMount 
      
-    socket = require('socket.io-client')('http://localhost:8080')
+    socket = require('socket.io-client')('http://localhost:8080/')
     socketFunc()
     return()=>{ //卸载期
+      console.log('卸载了');
       socket.close()
+      Cookie.remove('chatToken');
     }
   },[])
 

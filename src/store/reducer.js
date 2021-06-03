@@ -1,21 +1,25 @@
 
-const defaultState={
-    userInfo:{
-        username:""   
-    },
-    userList:[],
-    msgList:[],
-    userInputtingList:[], //正在输入的用户列表 /*准备删除 */
-}
+// let defaultState={
+//     userInfo:{
+//         username:""   
+//     },
+//     userList:[],
+//     msgList:[],
+//     userInputtingList:[], //正在输入的用户列表 /*准备删除 */
+// }
+const defaultState = JSON.parse(window.localStorage.getItem('defaultState'));
 const reducer = (state=defaultState,action)=>{
     const {type , payload } = action;
     console.log(payload);
     switch(type){
         case "USERINFO":{  //登陆信息
-            return {
+            let _state = {
                 ...state,
                 userInfo:payload
             }
+            console.log(_state);
+            window.localStorage.setItem('defaultState',JSON.stringify( _state))
+            return _state;
         }
         case "CONNECT":{    //连接成功
             return{

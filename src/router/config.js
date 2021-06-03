@@ -1,5 +1,5 @@
-import Home from "../page/home.jsx";
-import Login from "../page/login.jsx";
+import Home from "../page/home";
+import Login from "../page/login";
 const route = [{
     path:"/home",
     component:Home,
